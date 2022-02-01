@@ -12,11 +12,11 @@ export class UserService {
     UserService._instance = this;
   }
 
-  findByEmail(email: string): Promise<User | undefined> {
+  async findByEmail(email: string): Promise<User | undefined> {
     return User.findOne({email});
   }
 
-  getAll(email: string): Promise<User | undefined>{
+  async getAll(email: string): Promise<User | undefined>{
     return User.findOneOrFail({email});
   }
 
