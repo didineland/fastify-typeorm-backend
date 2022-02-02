@@ -1,5 +1,5 @@
 export enum ListingState {
   New = 'New',
-  Valid = 'Valid',
+  Listed = 'Listed',
   Closed = 'Closed'
 }

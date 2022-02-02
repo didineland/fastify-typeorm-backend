@@ -10,8 +10,6 @@ import 'dotenv/config'
 import cors from 'fastify-cors'
 import { Listing } from './models/listing'
 import { ListingService } from './services/listings.service'
-import { UserRole } from './enums/user-role.enum'
-import { ListingState } from './enums/listing-state.enum'
 
 require('dotenv').config()
 
@@ -48,6 +46,8 @@ const start = async () => {
         User, Listing
       ]
     });
+
+    //UserService.instance.createUser("jon@jon.com", "blablapwd") 
 
     /*var user = new User()
     user.email = 'adrien.taprest@gmail.com'
