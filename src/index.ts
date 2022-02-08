@@ -1,5 +1,5 @@
 import { fastify } from 'fastify'
-import { UserApi } from './apis/user.api'
+import { AuthApi } from './apis/auth.api'
 import { createConnection } from 'typeorm'
 import { User } from './models/user.model'
 import { UserService } from './services/users.service'
@@ -10,14 +10,17 @@ import 'dotenv/config'
 import cors from 'fastify-cors'
 import { Listing } from './models/listing'
 import { ListingService } from './services/listings.service'
+import { UserApi } from './apis/user.api'
+import { UserRole } from './enums/user-role.enum'
 
 require('dotenv').config()
 
 const server = fastify({ logger: true })
 
 const userService = new UserService();
-const userEndpoint = new UserApi(userService);
+const userEndpoint = new AuthApi(userService);
 const listingEndpoint = new ListingApi(new ListingService());
+const userApi = new UserApi(userService);
 
 server.register(jwt, {
   secret: {
@@ -30,6 +33,7 @@ server.register(cors, { });
 
 server.register(userEndpoint.register, { prefix: '/api/authentication' });
 server.register(listingEndpoint.register, { prefix: '/api/listings' });
+server.register(userApi.register, { prefix: '/api/users' });
 
 const start = async () => {
   try {
@@ -47,15 +51,13 @@ const start = async () => {
       ]
     });
 
-    //UserService.instance.createUser("jon@jon.com", "blablapwd") 
+    /*UserService.instance.createUser({
+      email: 'adrien.taprest@gmail.com',
+      password: 'billbucket',
+      role: UserRole.Admin 
+    }) */
 
-    /*var user = new User()
-    user.email = 'adrien.taprest@gmail.com'
-    user.password = '123',
-    user.role = UserRole.Admin
-    User.save(user);
-
-    var listing = new Listing();
+    /*var listing = new Listing();
     listing.name = "listing"
     listing.description = 'description'
     listing.state = ListingState.New

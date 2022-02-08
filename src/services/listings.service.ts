@@ -22,13 +22,13 @@ export class ListingService {
   }
 
   async put(requestorId: number, putListing: PutListing): Promise<Listing> {
-    let existingOffer = await Listing.findOne({ id: putListing.id });
+    let existingOffer = await Listing.findOne({ id: putListing.id }, { relations: ['user']});
 
     if (!existingOffer) {
       throw new CustomError(404)
     }
 
-    if (existingOffer.id != requestorId) {
+    if (existingOffer.user.id != requestorId) {
       throw new CustomError(403)
     }
 
@@ -36,8 +36,7 @@ export class ListingService {
     existingOffer.description = putListing.description;
     existingOffer.state = putListing.state;  
 
-    return Listing.save(existingOffer);
-    
+    return Listing.save(existingOffer);    
   }
 
 }

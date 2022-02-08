@@ -1,13 +1,13 @@
 import fastify, { FastifyInstance, FastifyPluginOptions } from "fastify";
-import { Login } from "../interfaces/login.interface";
+import { UserRole } from "../enums/user-role.enum";
+import { PostUser } from "../interfaces/create-user.interface";
 import { UserService } from "../services/users.service";
-import { UserSchema } from "./user.schema";
-import * as fs from 'fs';
+import { ScopeUtils } from "../utils/scope.utils";
+import { UserSchema } from "./schemas/user.schema";
 
 
 export class UserApi {
 
-  private readonly publicKey: Buffer;
 
   private static _instance: UserApi;
   public static get instance(): UserApi {
@@ -15,45 +15,41 @@ export class UserApi {
   }
   constructor(private userService: UserService) {
     UserApi._instance = this;
-    this.publicKey = fs.readFileSync('./keys/public_key.pem');
   }
 
   public register(fastify: FastifyInstance, opts: FastifyPluginOptions, done: any): void {
 
-    fastify.post('/login', UserSchema.loginOptions, async (request: any, reply: any) => {
-      return UserApi.instance.processLogin(request, reply);
-    });
+    fastify.addHook("onRequest", async (request, reply) => {
+      try {
+        await request.jwtVerify()
+      } catch (err) {
+        reply.send(err)
+      }
+    })
 
-    fastify.get('/key', { ...UserSchema.keyOptions }, async (request: any, reply: any) => {
-      return UserApi.instance.processGetKey(request, reply);
+
+    fastify.post('/', {... UserSchema.postUserOptions, preHandler: ScopeUtils.isAdmin}, async (request: any, reply: any) => {
+      return UserApi.instance.postUser(request, reply);
     });
 
     done();
-
+    
   }
 
-  public async processLogin(request: any, reply: any) {
+  public async postUser(request: any, reply: any) {
 
-    const login: Login = {
+    const createUser: PostUser = {
       email: request.body.email,
-      password: request.body.password
+      password: request.body.password,
+      role: UserRole[request?.body?.role as keyof typeof UserRole]
     };
 
     try {
-      const user = await this.userService.logUser(login);
-      return {
-        token: await reply.jwtSign({
-          email: user.email,
-          id: user.id,
-          role: user.role
-        })
-      };
+      const user = await this.userService.createUser(createUser);
+      reply.code(201).send();
     } catch (err) {
+      request.log.error(err);
       reply.code(400).send();
     }
-  }
-
-  public processGetKey(request: any, reply: any) {
-    return { publicKey: this.publicKey };
-  }
+  } 
 }

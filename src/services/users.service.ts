@@ -2,6 +2,7 @@ import { Login } from "../interfaces/login.interface";
 import { User } from "../models/user.model";
 import { hash, compare } from 'bcrypt'
 import { UserRole } from "../enums/user-role.enum";
+import { PostUser } from "../interfaces/create-user.interface";
 
 export class UserService {
 
@@ -29,8 +30,6 @@ export class UserService {
 
     const same = await compare(log.password, user.password);
 
-    console.log(same)
-
     if(!same) {
       throw "Wrond password"
     }
@@ -38,13 +37,13 @@ export class UserService {
     return user;
   }
 
-  async createUser(email: string, password: string): Promise<void> {
+  async createUser(postUser: PostUser): Promise<User> {
     let user = new User();
-    user.email = email;
-    user.password = await hash(password, 10);
-    user.role = UserRole.Investor
+    user.email = postUser.email;
+    user.password = await hash(postUser.password, 10);
+    user.role = postUser.role
 
-    User.save(user)
+    return User.save(user)
   }
 
 }

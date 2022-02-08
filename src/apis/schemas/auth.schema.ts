@@ -1,6 +1,6 @@
 import { RouteShorthandOptions } from "fastify"
 
-export class UserSchema {
+export class AuthSchema {
   public static readonly loginOptions: RouteShorthandOptions = {
     schema: {
       // querystring: {

@@ -1,11 +1,10 @@
 import fastify, { FastifyInstance, FastifyPluginOptions } from "fastify";
 import { ListingState } from "../enums/listing-state.enum";
-import { UserRole } from "../enums/user-role.enum";
 import { PutListing } from "../interfaces/put-listing.interface";
 import { ListingService } from "../services/listings.service";
 import { ScopeUtils } from "../utils/scope.utils";
 import { CustomError } from "./custom-error";
-import { ListingSchema } from "./listing.schema";
+import { ListingSchema } from "./schemas/listing.schema";
 
 export class ListingApi {
 
@@ -37,12 +36,12 @@ export class ListingApi {
       if(listing) {
         return listing;
       } else {
-        reply.code(204).send();
+        reply.code(404).send();
       }      
     });
 
     fastify.put('/:id', {...ListingSchema.putOptions, preHandler: ScopeUtils.isInvestor}, async (request: any, reply: any) => {
-      var putListing: PutListing = {
+      let putListing: PutListing = {
         id: request.params.id,
         name: request.body.name,
         description: request.body.description,
@@ -56,6 +55,7 @@ export class ListingApi {
           reply.code(error.code).send();
         }
         else {
+          request.log.error(error);
           throw error;
         }
       }

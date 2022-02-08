@@ -42,7 +42,7 @@ export class ListingSchema {
         properties: {
           name: { type: 'string' },
           description: { type: 'string' },
-          state: { type: 'string' }
+          state: { type: 'string', enum: ['New', 'Listed', 'Closed'] }
         },
         required: ['name', 'description', 'state']
       },
